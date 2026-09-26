@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Refresh
@@ -177,11 +179,12 @@ private fun SyncButton(syncing: Boolean, demo: Boolean, onClick: () -> Unit) {
     val angle by spin.animateFloat(0f, 360f, infiniteRepeatable(tween(900, easing = LinearEasing), RepeatMode.Restart), label = "angle")
     Button(onClick = onClick, enabled = !syncing, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), shape = RoundedCornerShape(14.dp)) {
         Icon(Icons.Outlined.Refresh, null, Modifier.size(18.dp).rotate(if (syncing) angle else 0f))
+        Spacer(Modifier.width(8.dp))
         Text(
             when {
-                syncing -> "  Syncing Classroom"
-                demo -> "  Sync Classroom (demo)"
-                else -> "  Sync Classroom"
+                syncing -> "Syncing Classroom"
+                demo -> "Sync Classroom (demo)"
+                else -> "Sync Classroom"
             },
             style = MaterialTheme.typography.labelLarge,
         )

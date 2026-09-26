@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeUnit
 
 /** Launches the real activity on the demo family and drives every screen and the core actions. */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [34])
+@Config(sdk = [34], qualifiers = "w411dp-h891dp-xxhdpi")
 class AppSmokeTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
@@ -56,7 +57,7 @@ class AppSmokeTest {
 
     @Test fun childDetailGivesExtraTime() {
         val before = vm.state.value.children.first { it.id == Seed.MAYA }.bonusTodayMin
-        compose.onNodeWithText("Maya").performClick()
+        compose.onNodeWithContentDescription("Open Maya", substring = true).performClick()
         compose.onNodeWithText("Maya Chen").assertIsDisplayed()
         compose.onNodeWithText("Give extra time").performClick()
         compose.onNodeWithText("Give +15 min").performClick()
