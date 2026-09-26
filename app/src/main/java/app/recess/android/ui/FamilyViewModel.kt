@@ -310,7 +310,8 @@ class FamilyViewModel(app: Application) : AndroidViewModel(app) {
         e is ApiException && e.statusCode == CommonStatusCodes.NETWORK_ERROR -> say("No connection", "Check your internet and try again.")
         e is ApiException -> say(
             "Google sign-in failed (code ${e.statusCode})",
-            "${CommonStatusCodes.getStatusCodeString(e.statusCode)}. $SETUP_HINT",
+            // Google's own message usually names the exact problem, e.g. "Developer console is not set up correctly".
+            "${e.message ?: CommonStatusCodes.getStatusCodeString(e.statusCode)}. $SETUP_HINT",
         )
         e is ClassroomClient.ApiException -> say("Classroom error", explain(e))
         e is IOException -> say("Couldn't reach Google", e.message)
