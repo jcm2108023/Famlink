@@ -6,6 +6,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
@@ -15,6 +16,7 @@ import app.recess.core.ActivityKind
 import app.recess.core.Seed
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,9 +33,27 @@ class AppSmokeTest {
 
     private val vm get() = ViewModelProvider(compose.activity)[FamilyViewModel::class.java]
 
+    @Before fun freshDemo() {
+        // Tests share the app's saved file, so start each one from the demo family.
+        compose.runOnUiThread { vm.resetDemo() }
+        compose.waitForIdle()
+    }
+
     private fun scrollTo(text: String) {
         compose.onNode(hasScrollAction()).performScrollToNode(hasText(text))
-        compose.onNodeWithText(text).assertIsDisplayed()
+        shown(text)
+    }
+
+    /** assertIsDisplayed, but the failure says where the node actually is. */
+    private fun shown(text: String) {
+        val node = compose.onNodeWithText(text).fetchSemanticsNode()
+        val root = compose.onRoot().fetchSemanticsNode()
+        val msg = "'$text' bounds=${node.boundsInRoot} root=${root.boundsInRoot} placed=${node.layoutInfo.isPlaced}"
+        try {
+            compose.onNodeWithText(text).assertIsDisplayed()
+        } catch (e: AssertionError) {
+            throw AssertionError(msg, e)
+        }
     }
 
     @Test fun everyTabRenders() {
@@ -41,14 +61,14 @@ class AppSmokeTest {
         scrollTo("Recent activity")
 
         compose.onNodeWithTag("tab_classroom").performClick()
-        compose.onNodeWithText("Everyone · 6 open").assertIsDisplayed()
+        shown("Everyone · 6 open")
 
         compose.onNodeWithTag("tab_rules").performClick()
-        compose.onNodeWithText("Automation").assertIsDisplayed()
+        shown("Automation")
         scrollTo("Per child")
 
         compose.onNodeWithTag("tab_log").performClick()
-        compose.onNodeWithText("Activity").assertIsDisplayed()
+        shown("Activity")
 
         compose.onNodeWithTag("tab_settings").performClick()
         compose.onNodeWithText("Sign in with Google").assertExists()
