@@ -5,6 +5,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -37,6 +38,7 @@ object Palette {
     fun tone(tone: Tone) = if (tone == Tone.Slate) Slate else Accent
 }
 
+@OptIn(ExperimentalTextApi::class)
 private fun variable(res: Int, weight: Int) =
     Font(res, FontWeight(weight), variationSettings = FontVariation.Settings(FontVariation.weight(weight)))
 
