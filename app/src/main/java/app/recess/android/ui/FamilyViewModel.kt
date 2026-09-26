@@ -284,8 +284,10 @@ class FamilyViewModel(app: Application) : AndroidViewModel(app) {
         afterConsent = null
         viewModelScope.launch {
             try {
-                if (resultCode != Activity.RESULT_OK) {
-                    say("Google sign-in cancelled")
+                // Even a cancelled result usually carries Google's status; read it so a setup
+                // problem (e.g. unregistered SHA-1, account not a test user) isn't shown as "cancelled".
+                if (resultCode != Activity.RESULT_OK && data == null) {
+                    say("Google sign-in cancelled", SETUP_HINT)
                     return@launch
                 }
                 next(auth.tokenFrom(data))
@@ -301,12 +303,23 @@ class FamilyViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun reportAuthError(e: Exception) = when {
         e is ApiException && e.statusCode == CommonStatusCodes.DEVELOPER_ERROR -> say(
-            "Google sign-in isn't set up for this build",
-            "Register this app's package name and SHA-1 as an Android OAuth client (see README).",
+            "Google sign-in isn't set up for this build (code 10)",
+            "Register package app.recess.famlink with this app's SHA-1 as an Android OAuth client (see README).",
         )
+        e is ApiException && e.statusCode == CommonStatusCodes.CANCELED -> say("Google sign-in cancelled (code 16)", SETUP_HINT)
         e is ApiException && e.statusCode == CommonStatusCodes.NETWORK_ERROR -> say("No connection", "Check your internet and try again.")
+        e is ApiException -> say(
+            "Google sign-in failed (code ${e.statusCode})",
+            "${CommonStatusCodes.getStatusCodeString(e.statusCode)}. $SETUP_HINT",
+        )
         e is ClassroomClient.ApiException -> say("Classroom error", explain(e))
         e is IOException -> say("Couldn't reach Google", e.message)
         else -> say("Google sign-in failed", e.message)
+    }
+
+    private companion object {
+        const val SETUP_HINT = "If you didn't close it yourself: check the Android OAuth client " +
+            "(package app.recess.famlink + SHA-1), that the Classroom API is enabled, and that your account " +
+            "is a test user on the OAuth consent screen."
     }
 }

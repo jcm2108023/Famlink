@@ -22,6 +22,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -91,7 +92,10 @@ fun RecessApp(vm: FamilyViewModel) {
     }
     LaunchedEffect(Unit) { vm.consentRequests.collect { consent.launch(IntentSenderRequest.Builder(it).build()) } }
     LaunchedEffect(Unit) {
-        vm.messages.collect { m -> snackbar.showSnackbar(if (m.detail != null) "${m.title}\n${m.detail}" else m.title) }
+        vm.messages.collect { m ->
+            if (m.detail == null) snackbar.showSnackbar(m.title)
+            else snackbar.showSnackbar("${m.title}\n${m.detail}", withDismissAction = true, duration = SnackbarDuration.Long)
+        }
     }
     // Pick up usage access granted in Settings, and fresh screen time, whenever the app returns.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { vm.refreshUsage() }
