@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -155,6 +156,7 @@ private fun BottomBar(nav: NavHostController, current: String?) {
             NavigationBarItem(
                 selected = current == tab.route,
                 onClick = { nav.switchTab(tab) },
+                modifier = Modifier.testTag("tab_${tab.route}"),
                 icon = { Icon(tab.icon, null) },
                 label = { Text(tab.label, style = MaterialTheme.typography.labelSmall) },
                 colors = NavigationBarItemDefaults.colors(
