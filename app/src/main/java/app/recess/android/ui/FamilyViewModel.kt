@@ -250,7 +250,7 @@ class FamilyViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun explain(e: ClassroomClient.ApiException): String = when (e.code) {
-        403 -> "Your account can't see this student's classes. Sign in as their teacher or a Workspace admin. (${e.message})"
+        403 -> "Your account can't see this student's classes. Sign in with the account that created or teaches them, or a Workspace admin. (${e.message})"
         404 -> "Classroom found no student with that email in classes you can see."
         else -> e.message ?: "Classroom error ${e.code}"
     }

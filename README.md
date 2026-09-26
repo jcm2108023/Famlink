@@ -8,7 +8,7 @@ on-device screen time.
 
 | Data | Source | Notes |
 | --- | --- | --- |
-| Courses, coursework, submissions, grades | **Google Classroom API** (read-only) | Sign in with a **teacher** (their own classes) or **Google Workspace admin** (any class) account. Google gives parent/guardian accounts no API access to coursework. |
+| Courses, coursework, submissions, grades | **Google Classroom API** (read-only) | Sign in with the account that **teaches** the classes (whoever created them in Classroom, including a parent's own Google account) or a **Google Workspace admin** (any class). Classroom's guardian (email-summary) access gives no API access to coursework. |
 | Screen time per app | **Android Usage Access** on the phone Recess runs on | Install Recess on the child's phone, pick the child under *Settings → This phone's screen time*, and allow Usage access. |
 | Family Link limits / bonus time | — | **Family Link has no public API.** Recess works out the minutes a child has earned; you add them in the Family Link app. App limits and blocks in Recess are a record, not enforcement. |
 

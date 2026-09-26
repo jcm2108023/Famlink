@@ -78,7 +78,7 @@ fun SettingsScreen(state: FamilyState, syncing: Boolean, usageAccess: Boolean, v
                 }
             } else {
                 Text(
-                    "Sign in with a teacher or Google Workspace admin account from the children’s school. Google only lets teachers (for their own classes) and admins read a student’s work — parent accounts can’t.",
+                    "Sign in with the Google account that teaches your children’s classes — if you created the classes in Classroom yourself, that’s your own account. A school’s Workspace admin account also works. Google’s guardian (parent) access can’t read coursework.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Palette.Muted,
                 )
