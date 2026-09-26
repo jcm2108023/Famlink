@@ -21,33 +21,45 @@
 ## Plan
 ### :core (pure Kotlin, unit-tested locally)
 - [x] Models, engine, seed, format, JSON codec (+23 tests)
-- [ ] Model additions: `Child.classroomEmail`, nullable `ClassroomTask.dueAt`,
+- [x] Model additions: `Child.classroomEmail`, nullable `ClassroomTask.dueAt`,
       `SupervisedApp.packageName`, `FamilySettings.deviceChildId`/`classroomAccount`
-- [ ] Classroom API DTOs + `ClassroomImport`: map courses/coursework/submissions → tasks;
+- [x] Classroom API DTOs + `ClassroomImport`: map courses/coursework/submissions → tasks;
       first sync is a baseline (no retroactive grants); later transitions
       (assigned → turned in / returned+graded) run the existing rules engine
-- [ ] `UsageImport`: apply an on-device usage snapshot (today + 7-day history + per-app) to a child,
+- [x] `UsageImport`: apply an on-device usage snapshot (today + 7-day history + per-app) to a child,
       keeping parent-set app limits/blocks
-- [ ] `Seed.empty()` for a real (non-demo) family
-- [ ] Tests for all of the above
+- [x] `Seed.empty()` for a real (non-demo) family
+- [x] Tests for all of the above
 
 ### :app
-- [ ] Repository: JSON file persistence, `StateFlow<FamilyState>`
-- [ ] Google authorization (Play services `AuthorizationClient`, read-only Classroom scopes)
-- [ ] Classroom REST client (HttpURLConnection + kotlinx.serialization, paging)
-- [ ] Usage reader (UsageStatsManager events → minutes per app per day)
-- [ ] ViewModel: actions + snackbar messages; real sync when signed in & linked, demo replay otherwise
-- [ ] Theme (original palette, Fraunces + Figtree), bottom navigation
-- [ ] Screens: Home, Classroom, Rules, Log, Settings (Google account, child links, this-device
+- [x] Repository: JSON file persistence, `StateFlow<FamilyState>`
+- [x] Google authorization (Play services `AuthorizationClient`, read-only Classroom scopes)
+- [x] Classroom REST client (HttpURLConnection + kotlinx.serialization, paging)
+- [x] Usage reader (UsageStatsManager events → minutes per app per day)
+- [x] ViewModel: actions + snackbar messages; real sync when signed in & linked, demo replay otherwise
+- [x] Theme (original palette, Fraunces + Figtree), bottom navigation
+- [x] Screens: Home, Classroom, Rules, Log, Settings (Google account, child links, this-device
       usage), Child detail; dialogs: give time, provision, add child, time pickers
-- [ ] Launcher icon, manifest (INTERNET, PACKAGE_USAGE_STATS, launcher `<queries>`)
-- [ ] Committed debug keystore → stable SHA-1 for the OAuth client
-- [ ] GitHub Actions: core tests + assembleDebug, upload APK
-- [ ] README: Google Cloud setup (enable Classroom API, consent screen, Android OAuth client)
+- [x] Launcher icon, manifest (INTERNET, PACKAGE_USAGE_STATS, launcher `<queries>`)
+- [x] Committed debug keystore → stable SHA-1 for the OAuth client
+- [x] GitHub Actions: core tests + assembleDebug, upload APK
+- [x] README: Google Cloud setup (enable Classroom API, consent screen, Android OAuth client)
 
 ### Verify
-- [ ] `:core:test` locally
-- [ ] CI green on the branch (full Android build can't run here — dl.google.com is blocked)
+- [x] `:core:test` locally
+- [x] CI green on the branch (full Android build can't run here — dl.google.com is blocked)
 
 ## Review
-_(filled in at the end)_
+**Verified**
+- `:core:test`, 35 tests: the original engine cases, the Classroom importer (baseline, turn-in,
+  grades once, reclaim/resubmit, history window, UTC due dates, API JSON), the usage importer, formatting.
+- CI green on `ead8592`: core tests, a Robolectric UI smoke test that launches `MainActivity` and
+  drives every tab, child detail + give-time dialog, and demo sync; lint; `assembleDebug`.
+
+**Not verified here** (no emulator; the sandbox can't download the APK or reach Google Maven)
+- Real Google sign-in and Classroom API calls need the user's OAuth client + a teacher/admin account.
+- UsageStatsManager reading on a physical phone.
+
+**Notes**
+- The package id (`app.recess.famlink`) differs from the WebView APK (`app.recess.family`), so both can be installed side by side.
+- App-limit and block toggles are a ledger only; Family Link can't be controlled by third-party apps.
