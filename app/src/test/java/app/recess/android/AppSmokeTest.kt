@@ -40,7 +40,7 @@ class AppSmokeTest {
         scrollTo("Recent activity")
 
         compose.onNodeWithTag("tab_classroom").performClick()
-        compose.onNodeWithText("Everyone · 5 open").assertIsDisplayed()
+        compose.onNodeWithText("Everyone · 6 open").assertIsDisplayed()
 
         compose.onNodeWithTag("tab_rules").performClick()
         compose.onNodeWithText("Automation").assertIsDisplayed()
