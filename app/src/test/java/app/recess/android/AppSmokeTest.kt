@@ -1,7 +1,8 @@
 package app.recess.android
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -40,7 +41,7 @@ class AppSmokeTest {
     }
 
     private fun scrollTo(text: String) {
-        compose.onNode(hasScrollAction()).performScrollToNode(hasText(text))
+        compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange)).performScrollToNode(hasText(text))
         shown(text)
     }
 
