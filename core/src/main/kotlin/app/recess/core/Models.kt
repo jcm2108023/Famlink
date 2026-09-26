@@ -49,6 +49,8 @@ data class Child(
     /** Seven days of minutes used, oldest first; the last entry is today. */
     val weeklyUsed: List<Int>,
     val lastProvisionedAt: EpochMs? = null,
+    /** School Google account used to read this child's Classroom work (teacher/admin view). */
+    val classroomEmail: String? = null,
 ) {
     val firstName: String get() = name.substringBefore(' ')
 }
@@ -62,6 +64,8 @@ data class SupervisedApp(
     val usedMin: Int,
     val limitMin: Int? = null,
     val blocked: Boolean,
+    /** Set for apps read from this phone's usage stats; null for manually tracked apps. */
+    val packageName: String? = null,
 )
 
 @Serializable
@@ -80,7 +84,8 @@ data class ClassroomTask(
     val courseId: String,
     val title: String,
     val kind: TaskKind,
-    val dueAt: EpochMs,
+    /** Null when the teacher set no due date. */
+    val dueAt: EpochMs?,
     val state: TaskState,
     val gradePct: Double? = null,
     val maxPoints: Int,
@@ -130,6 +135,10 @@ data class FamilySettings(
     val dailyBonusCapMin: Int,
     val applyAfterBedtime: Boolean,
     val lastSyncAt: EpochMs? = null,
+    /** Child whose usage this phone reports, when Recess is installed on the child's device. */
+    val deviceChildId: String? = null,
+    /** Google account Classroom is read with, once signed in. */
+    val classroomAccount: String? = null,
 )
 
 @Serializable

@@ -109,6 +109,18 @@ object Seed {
         )
     }
 
+    /** A real family with no children yet; keeps the parent's names and Google account. */
+    fun empty(settings: FamilySettings): FamilyState = FamilyState(
+        children = emptyList(),
+        courses = emptyList(),
+        tasks = emptyList(),
+        rules = DEFAULT_RULES,
+        grants = emptyList(),
+        activity = emptyList(),
+        settings = settings.copy(lastSyncAt = null, deviceChildId = null),
+        apps = emptyList(),
+    )
+
     /** A newly added child starts with the same three supervised apps as the web app. */
     fun newChild(
         state: FamilyState,
@@ -116,6 +128,7 @@ object Seed {
         age: Int,
         device: String,
         dailyLimitMin: Int,
+        classroomEmail: String? = null,
         id: String = "child_${Engine.newId().take(8)}",
     ): FamilyState {
         val child = Child(
@@ -123,7 +136,7 @@ object Seed {
             tone = if (state.children.size % 2 == 0) Tone.Sage else Tone.Slate,
             dailyLimitMin = dailyLimitMin, usedTodayMin = 0, bonusTodayMin = 0, autoApply = false,
             bedtime = "20:30", downtimeStart = "20:30", downtimeEnd = "07:00", school = state.settings.schoolName,
-            weeklyUsed = List(7) { 0 },
+            weeklyUsed = List(7) { 0 }, classroomEmail = classroomEmail,
         )
         val apps = listOf(
             SupervisedApp("a_${id}_yt", id, "YouTube", AppCategory.Video, 0, 30, false),

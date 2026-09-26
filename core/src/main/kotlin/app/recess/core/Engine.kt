@@ -33,10 +33,15 @@ object Engine {
         val items: List<EarnableItem>,
     )
 
+    /** Due date ascending, undated work last. */
+    val byDue: Comparator<ClassroomTask> = compareBy(nullsLast<Long>()) { it.dueAt }
+
     // ---- Queries -------------------------------------------------------------------------------
 
-    fun isDueTodayOrOverdue(task: ClassroomTask, now: ZonedDateTime): Boolean =
-        Format.isToday(task.dueAt, now) || task.dueAt < now.toInstant().toEpochMilli()
+    fun isDueTodayOrOverdue(task: ClassroomTask, now: ZonedDateTime): Boolean {
+        val due = task.dueAt ?: return false
+        return Format.isToday(due, now) || due < now.toInstant().toEpochMilli()
+    }
 
     fun dueTodayOpen(state: FamilyState, childId: String, now: ZonedDateTime): List<ClassroomTask> =
         dueTodayOpen(state.tasks, childId, now)
@@ -207,7 +212,7 @@ object Engine {
      */
     fun syncClassroom(input: FamilyState, now: ZonedDateTime): SyncSummary {
         var state = input
-        val assigned = state.tasks.filter { it.state == TaskState.Assigned }.sortedBy { it.dueAt }
+        val assigned = state.tasks.filter { it.state == TaskState.Assigned }.sortedWith(Engine.byDue)
         val due = assigned.filter { isDueTodayOrOverdue(it, now) }
         val targets = due.ifEmpty { assigned }.take(2)
 
@@ -223,17 +228,33 @@ object Engine {
             )
         }
 
-        val d = Draft(state)
-        val nowMs = now.toInstant().toEpochMilli()
-        d.settings = d.settings.copy(lastSyncAt = nowMs)
-        val message = if (completed.isEmpty()) {
+        return SyncSummary(recordSync(state, completed.size, now), completed)
+    }
+
+    /** Stamps the sync time and logs how many new submissions a sync picked up. */
+    fun recordSync(input: FamilyState, submissions: Int, now: ZonedDateTime): FamilyState {
+        val message = if (submissions == 0) {
             "Classroom sync: every assignment is already turned in."
         } else {
-            "Classroom sync found ${completed.size} new submission${if (completed.size == 1) "" else "s"}."
+            "Classroom sync found $submissions new submission${if (submissions == 1) "" else "s"}."
         }
-        d.pushActivity(nowMs, null, ActivityKind.Sync, message)
-        return SyncSummary(d.build(), completed)
+        return logActivity(input, null, ActivityKind.Sync, message, now).let {
+            it.copy(settings = it.settings.copy(lastSyncAt = now.toInstant().toEpochMilli()))
+        }
     }
+
+    fun logActivity(input: FamilyState, childId: String?, kind: ActivityKind, message: String, now: ZonedDateTime): FamilyState =
+        Draft(input).apply { pushActivity(now.toInstant().toEpochMilli(), childId, kind, message) }.build()
+
+    /** Removes a child and everything that belongs to them. */
+    fun removeChild(input: FamilyState, childId: String): FamilyState = input.copy(
+        children = input.children.filterNot { it.id == childId },
+        courses = input.courses.filterNot { it.childId == childId },
+        tasks = input.tasks.filterNot { it.childId == childId },
+        grants = input.grants.filterNot { it.childId == childId },
+        apps = input.apps.filterNot { it.childId == childId },
+        settings = input.settings.let { if (it.deviceChildId == childId) it.copy(deviceChildId = null) else it },
+    )
 
     // ---- Mutable working copy ------------------------------------------------------------------
 

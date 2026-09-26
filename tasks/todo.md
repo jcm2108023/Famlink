@@ -1,36 +1,53 @@
-# Android app — port of the "Recess" (Grok workspace) parent dashboard
+# Android app — native port of "Recess" + Google sign-in
 
-Source: `grok-workspace.zip` — a TanStack Start web app (React, zustand, localStorage) that turns
-Google Classroom work into Family Link bonus screen time. All real logic lives in
-`src/lib/engine.ts` (pure functions) + `seed.ts` + `format.ts`; the server/auth/DB scaffolding
-is unused by the product.
+## Decisions (from the user, 2026-09-26)
+- **Native Kotlin + Jetpack Compose** app (Google blocks OAuth inside WebViews, so the WebView APK
+  can't do Google sign-in).
+- **Teacher / Workspace-admin account signs in.** The Classroom API gives guardians no access to
+  coursework, but a teacher (for their own classes) or a domain admin (for any class) can read a
+  student's courses, coursework and submissions. Each child is linked by their school email.
+- **Family Link has no public API.** Recess stays the ledger of earned minutes (applied by hand in
+  Family Link), and adds **real on-device usage** via Android Usage Access when Recess runs on the
+  child's phone.
 
-## Decision
-Native **Kotlin + Jetpack Compose** app (not a WebView wrapper): the web app is SSR-only with no
-static SPA build, and the engine is small, pure and well-tested — a clean port is simpler and
-gives a real Android UX (offline, persisted state, Material components, back navigation).
+## Review of the WebView APK (2nd upload)
+- WebView wrapper around a static export of the web app; renders fine and works offline.
+- Classroom "Connected" badge and Family Link "2 devices" are hard-coded — nothing is connected.
+- "Sync Classroom" replays demo data; "Send to device" only writes to local storage.
+- Keystore + passwords committed in plain text in `android/app/build.gradle`.
+- React hydration error #418 at startup (server-rendered date baked into `index.html`).
+- Fonts load from Google Fonts at runtime, so offline it falls back to system fonts.
 
 ## Plan
-- [x] Gradle project: `:core` (pure Kotlin/JVM — models, engine, seed, format) + `:app` (Compose)
-- [x] Port `types.ts` → `Models.kt` (kotlinx.serialization)
-- [x] Port `engine.ts` → `Engine.kt` (same semantics; injectable `now` + zone)
-- [x] Port `seed.ts`, `format.ts`
-- [x] Port `engine.test.ts` → JUnit (all 14 cases) + format tests
-- [ ] Persistence: JSON file repository (replaces zustand `persist`/localStorage)
-- [ ] ViewModel exposing `StateFlow<FamilyState>` + one-shot snackbar messages (replaces toasts)
-- [ ] Theme: original palette (sage/cream), Fraunces + Figtree fonts (OFL, bundled)
-- [ ] Screens: Home, Classroom, Rules, Log, Settings, Child detail; bottom navigation
-- [ ] Components: time ring, cap meter, week chart, task row, grant queue, earnable panel,
-      device preview, supervised apps, give-time dialog, provision sheet, add-child dialog
-- [ ] CI: GitHub Actions — unit tests + debug APK artifact
-- [ ] Verify: `:core:test`, `:app:assembleDebug`, lint; render check
-- [ ] README with build/run instructions
+### :core (pure Kotlin, unit-tested locally)
+- [x] Models, engine, seed, format, JSON codec (+23 tests)
+- [ ] Model additions: `Child.classroomEmail`, nullable `ClassroomTask.dueAt`,
+      `SupervisedApp.packageName`, `FamilySettings.deviceChildId`/`classroomAccount`
+- [ ] Classroom API DTOs + `ClassroomImport`: map courses/coursework/submissions → tasks;
+      first sync is a baseline (no retroactive grants); later transitions
+      (assigned → turned in / returned+graded) run the existing rules engine
+- [ ] `UsageImport`: apply an on-device usage snapshot (today + 7-day history + per-app) to a child,
+      keeping parent-set app limits/blocks
+- [ ] `Seed.empty()` for a real (non-demo) family
+- [ ] Tests for all of the above
 
-## Status (paused)
-- `:core` done: models, engine, seed, format, JSON codec; 23 JUnit tests pass (14 ported + 9 new).
-- `:app` has only the Gradle config + bundled fonts; the screens aren't written yet.
-- Local APK builds are blocked (dl.google.com is denied by the sandbox network policy); the full build is meant to be checked in GitHub Actions.
-- Paused: the user's second upload already includes a WebView-wrapped `Recess.apk`. Waiting for the user to decide whether to finish the native port.
+### :app
+- [ ] Repository: JSON file persistence, `StateFlow<FamilyState>`
+- [ ] Google authorization (Play services `AuthorizationClient`, read-only Classroom scopes)
+- [ ] Classroom REST client (HttpURLConnection + kotlinx.serialization, paging)
+- [ ] Usage reader (UsageStatsManager events → minutes per app per day)
+- [ ] ViewModel: actions + snackbar messages; real sync when signed in & linked, demo replay otherwise
+- [ ] Theme (original palette, Fraunces + Figtree), bottom navigation
+- [ ] Screens: Home, Classroom, Rules, Log, Settings (Google account, child links, this-device
+      usage), Child detail; dialogs: give time, provision, add child, time pickers
+- [ ] Launcher icon, manifest (INTERNET, PACKAGE_USAGE_STATS, launcher `<queries>`)
+- [ ] Committed debug keystore → stable SHA-1 for the OAuth client
+- [ ] GitHub Actions: core tests + assembleDebug, upload APK
+- [ ] README: Google Cloud setup (enable Classroom API, consent screen, Android OAuth client)
+
+### Verify
+- [ ] `:core:test` locally
+- [ ] CI green on the branch (full Android build can't run here — dl.google.com is blocked)
 
 ## Review
 _(filled in at the end)_

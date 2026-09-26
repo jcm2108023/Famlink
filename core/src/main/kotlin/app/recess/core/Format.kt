@@ -41,7 +41,8 @@ object Format {
     fun isToday(ms: EpochMs, now: ZonedDateTime): Boolean =
         at(ms, now.zone).toLocalDate() == now.toLocalDate()
 
-    fun dueLabel(ms: EpochMs, now: ZonedDateTime): String {
+    fun dueLabel(ms: EpochMs?, now: ZonedDateTime): String {
+        if (ms == null) return "No due date"
         val d = at(ms, now.zone)
         val time = clock.format(d)
         val days = d.toLocalDate().toEpochDay() - now.toLocalDate().toEpochDay()

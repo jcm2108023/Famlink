@@ -4,7 +4,8 @@ import kotlinx.serialization.json.Json
 
 /** JSON codec for persisting [FamilyState]; tolerant of fields added or removed between versions. */
 object FamilyJson {
-    private val json = Json {
+    /** Shared lenient config, also used to decode Classroom API responses. */
+    val json = Json {
         ignoreUnknownKeys = true
         encodeDefaults = true
         coerceInputValues = true
