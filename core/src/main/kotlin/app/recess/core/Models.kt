@@ -92,7 +92,10 @@ data class ClassroomTask(
     val turnedInAt: EpochMs? = null,
     val turnInGrantId: String? = null,
     val gradeGrantId: String? = null,
-)
+) {
+    /** Synced from Google Classroom, which owns its state; demo/manual tasks are edited in-app. */
+    val fromClassroom: Boolean get() = id.startsWith(ClassroomImport.PREFIX)
+}
 
 @Serializable
 data class Rule(

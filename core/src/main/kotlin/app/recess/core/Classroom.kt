@@ -35,6 +35,7 @@ object Gc {
         val dueTime: TimeOfDay? = null,
         val maxPoints: Double? = null,
         val materials: List<Material> = emptyList(),
+        val creationTime: String? = null,
     )
 
     @Serializable

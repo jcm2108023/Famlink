@@ -16,13 +16,24 @@ android {
         versionName = "1.0.0"
     }
 
+    signingConfigs {
+        // Committed on purpose: a fixed debug key gives every build the same SHA-1, which the
+        // Google OAuth client for Classroom is registered against. It is not a release key.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Signed with the debug key so `assembleRelease` produces an installable APK out of
-            // the box. Swap in a real signingConfig before publishing to Play.
+            // Signed with the committed debug key so `assembleRelease` installs out of the box and
+            // matches the OAuth client. Use a private key (and register its SHA-1) before publishing.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -57,5 +68,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons)
+    implementation(libs.play.services.auth)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

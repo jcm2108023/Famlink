@@ -18,12 +18,17 @@ import kotlin.math.roundToInt
 object ClassroomImport {
     data class Result(val state: FamilyState, val completed: List<Engine.SyncItem>)
 
-    fun courseId(childId: String, remoteCourseId: String) = "gc_${remoteCourseId}_$childId"
-    fun taskId(childId: String, remoteCourseId: String, workId: String) = "gc_${remoteCourseId}_${workId}_$childId"
+    const val PREFIX = "gc_"
+
+    /** Work due (or, if undated, created) longer ago than this is left out. */
+    const val HISTORY_DAYS = 14L
+
+    fun courseId(childId: String, remoteCourseId: String) = "$PREFIX${remoteCourseId}_$childId"
+    fun taskId(childId: String, remoteCourseId: String, workId: String) = "$PREFIX${remoteCourseId}_${workId}_$childId"
 
     fun apply(input: FamilyState, childId: String, remote: List<RemoteCourse>, now: ZonedDateTime): Result {
         val child = input.children.firstOrNull { it.id == childId } ?: return Result(input, emptyList())
-        val previous = input.tasks.filter { it.childId == childId && it.id.startsWith("gc_") }.associateBy { it.id }
+        val previous = input.tasks.filter { it.childId == childId && it.fromClassroom }.associateBy { it.id }
         val baseline = previous.isEmpty()
 
         val courses = remote.map { rc ->
@@ -39,8 +44,14 @@ object ClassroomImport {
         // What Classroom reports now, the version the engine starts from, and the grade to apply.
         data class Incoming(val remote: ClassroomTask, val staged: ClassroomTask, val runTurnIn: Boolean, val grade: Double?)
 
+        val cutoff = now.minusDays(HISTORY_DAYS).toInstant().toEpochMilli()
+        fun recent(work: Gc.CourseWork): Boolean {
+            val at = dueAt(work) ?: work.creationTime?.let(::parseInstant) ?: return true
+            return at >= cutoff
+        }
+
         val incoming = remote.flatMap { rc ->
-            rc.work.filter { it.state == null || it.state == "PUBLISHED" }.map { work ->
+            rc.work.filter { (it.state == null || it.state == "PUBLISHED") && recent(it) }.map { work ->
                 val id = taskId(childId, rc.course.id, work.id)
                 val sub = rc.submissions.firstOrNull { it.courseWorkId == work.id }
                 val remoteState = when (sub?.state) {

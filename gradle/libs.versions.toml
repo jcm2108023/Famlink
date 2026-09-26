@@ -8,6 +8,7 @@ composeBom = "2025.06.00"
 navigation = "2.9.0"
 serialization = "1.8.1"
 junit = "4.13.2"
+playServicesAuth = "21.3.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
@@ -22,6 +23,7 @@ androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
 androidx-compose-material-icons = { module = "androidx.compose.material:material-icons-extended" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 junit = { module = "junit:junit", version.ref = "junit" }
 
 [plugins]

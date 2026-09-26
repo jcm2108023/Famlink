@@ -94,6 +94,14 @@ class ClassroomImportTest {
         assertEquals(ZonedDateTime.of(2026, 3, 10, 23, 59, 0, 0, zone).toInstant().toEpochMilli(), ClassroomImport.dueAt(noTime))
     }
 
+    @Test fun `old work outside the history window is skipped`() {
+        val works = listOf(work("w1"), work("old", day = 1).copy(dueDate = Gc.Date(2026, 2, 1)),
+            work("undatedOld").copy(dueDate = null, creationTime = "2026-01-01T00:00:00Z"),
+            work("undatedNew").copy(dueDate = null, creationTime = "2026-03-09T00:00:00Z"))
+        val ids = ClassroomImport.apply(family(), kid, remote(works = works), now).state.tasks.map { it.id }
+        assertEquals(listOf("w1", "undatedNew").map { ClassroomImport.taskId(kid, "c1", it) }, ids)
+    }
+
     @Test fun `api json decodes with unknown fields`() {
         val json = """{"courseWork":[{"id":"9","courseId":"c1","title":"Lab","workType":"ASSIGNMENT","state":"PUBLISHED",
             "dueDate":{"year":2026,"month":3,"day":11},"maxPoints":10,"alternateLink":"x","materials":[{"link":{"url":"u"}}]}],
